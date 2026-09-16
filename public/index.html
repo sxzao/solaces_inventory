@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solaces | Inventory Desk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">S</span><span>solaces</span></div>
+      <div class="store-label">INVENTORY DESK</div>
+      <nav class="nav-tabs" aria-label="Main navigation">
+        <button class="nav-item active" data-view="inventory"><span>▦</span> Active inventory</button>
+        <button class="nav-item" data-view="sales"><span>↗</span> Sales history</button>
+      </nav>
+      <div class="sidebar-foot"><div class="status-dot"></div><span>Local workspace</span></div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div><p class="eyebrow">WEDNESDAY, SEPTEMBER 16, 2026</p><h1 id="page-title">Active inventory</h1></div>
+        <div class="top-actions"><span class="role-pill">OWNER VIEW</span><button class="icon-button" id="refresh-button" title="Refresh inventory">↻</button><button class="primary-button" id="open-encode"><span>+</span> Encode item</button></div>
+      </header>
+
+      <section class="metric-grid" aria-label="Inventory summary">
+        <article class="metric-card metric-main"><div class="metric-label">Available pieces</div><div class="metric-value" id="unsold-count">0</div><div class="metric-note">Currently on rack or in storage</div></article>
+        <article class="metric-card"><div class="metric-label">Stock value</div><div class="metric-value" id="unsold-value">₱0</div><div class="metric-note">At listed selling price</div></article>
+        <article class="metric-card"><div class="metric-label">Sold today</div><div class="metric-value" id="sold-today">0</div><div class="metric-note">Completed status updates</div></article>
+        <article class="metric-card alert-card"><div class="metric-label">Needs attention</div><div class="metric-value" id="stale-count">0</div><div class="metric-note">Pieces over 30 days old</div></article>
+      </section>
+
+      <section class="workspace-panel" id="inventory-view">
+        <div class="section-heading"><div><p class="eyebrow">LIVE STOCK LIST</p><h2>Every piece, accounted for.</h2></div><div class="legend"><span><i class="dot fresh"></i> Fresh</span><span><i class="dot watch"></i> Watch</span><span><i class="dot stale"></i> Stale</span></div></div>
+        <div class="toolbar"><label class="search-field"><span>⌕</span><input id="search-input" type="search" placeholder="Search item ID"></label><select id="category-filter"><option value="">All categories</option><option value="TOP">Tops</option><option value="JKT">Jackets</option><option value="DRS">Dresses</option><option value="BTM">Bottoms</option><option value="SKT">Skirts</option><option value="OTH">Other</option></select><select id="age-filter"><option value="">All stock age</option><option value="fresh">0–14 days</option><option value="watch">15–30 days</option><option value="stale">31+ days</option></select></div>
+        <div class="table-wrap"><table><thead><tr><th>ITEM ID</th><th>CATEGORY</th><th>SIZE</th><th>PRICE</th><th>AGE</th><th>ADDED</th><th><span class="sr-only">Action</span></th></tr></thead><tbody id="inventory-rows"></tbody></table><div class="empty-state" id="empty-state" hidden><div class="empty-icon">＋</div><h3>Your rack is ready.</h3><p>Encode the first piece of today's inventory to see it here.</p><button class="primary-button" id="empty-encode">Encode an item</button></div></div>
+      </section>
+
+      <section class="workspace-panel" id="sales-view" hidden><div class="section-heading"><div><p class="eyebrow">ARCHIVE</p><h2>Sales history</h2></div><label class="search-field compact"><span>⌕</span><input id="sales-search" type="search" placeholder="Search item ID"></label></div><div class="table-wrap"><table><thead><tr><th>ITEM ID</th><th>CATEGORY</th><th>SIZE</th><th>PRICE</th><th>SOLD AT</th></tr></thead><tbody id="sales-rows"></tbody></table><div class="empty-state" id="sales-empty" hidden><div class="empty-icon">↗</div><h3>No sales recorded.</h3><p>Sold items will appear here automatically.</p></div></div></section>
+    </main>
+  </div>
+
+  <dialog id="encode-dialog"><form id="encode-form"><div class="dialog-header"><div><p class="eyebrow">NEW PIECE</p><h2>Encode inventory</h2></div><button class="close-button" id="close-encode" type="button" aria-label="Close">×</button></div><p class="dialog-intro">Give this one-of-a-kind piece a home in the system.</p><label>Category<select name="category" required><option value="TOP">Top</option><option value="JKT">Jacket</option><option value="DRS">Dress</option><option value="BTM">Bottom</option><option value="SKT">Skirt</option><option value="OTH">Other</option></select></label><div class="form-row"><label>Size<input name="size" required placeholder="e.g. M, 28, One size"></label><label>Price<input name="price" required type="number" min="0" step="0.01" placeholder="0.00"></label></div><div class="id-preview"><span>GENERATED ID</span><strong id="id-preview-value">260916-TOP-001</strong></div><p class="form-error" id="form-error"></p><div class="dialog-actions"><button class="secondary-button" id="cancel-encode" type="button">Cancel</button><button class="primary-button" type="submit">Save item</button></div></form></dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
