@@ -20,7 +20,7 @@ Inventory is persisted in MySQL. The API exposes `/api/dashboard`, `/api/items`,
 3. Set `DB_USER`, `DB_PASSWORD`, and any non-default host, port, or database values in `.env`.
 4. Run `npm install`, then `npm start`.
 
-The server uses a connection pool and all item creation/status updates are written directly to MySQL. The old `data/inventory.json` file is no longer read by the application.
+The server uses a connection pool and all item creation/status updates are written directly to MySQL.
 
 ## Item IDs
 
