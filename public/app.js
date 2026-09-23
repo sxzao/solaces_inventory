@@ -40,7 +40,19 @@ async function loadSales() {
   const search = encodeURIComponent($('#sales-search').value);
   const sales = await request(`/api/sales?search=${search}`);
   $('#sales-empty').hidden = sales.length !== 0;
-  $('#sales-rows').innerHTML = sales.map((sale) => `<tr><td><span class="item-id">${sale.itemId}</span></td><td class="category">${categoryName(sale.category)}</td><td>${sale.size}</td><td class="price">${money(sale.price)}</td><td class="subtle">${dateTime(sale.soldAt)}</td></tr>`).join('');
+  $('#sales-rows').innerHTML = sales.map((sale) => `<tr><td><span class="item-id">${sale.itemId}</span></td><td class="category">${categoryName(sale.category)}</td><td>${sale.size}</td><td class="price">${money(sale.price)}</td><td class="subtle">${dateTime(sale.soldAt)}</td><td><button class="action-button" data-unsold="${sale.itemId}">Undo sale</button></td></tr>`).join('');
+  $('#sales-rows').querySelectorAll('[data-unsold]').forEach((button) => button.addEventListener('click', () => markUnsold(button.dataset.unsold)));
+}
+
+async function markUnsold(itemId) {
+  if (!window.confirm(`Return ${itemId} to active inventory?`)) return;
+  try {
+    await request(`/api/items/${itemId}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'UNSOLD' }) });
+    showToast(`${itemId} returned to active inventory`);
+    await Promise.all([loadDashboard(), loadSales()]);
+  } catch (error) {
+    showToast(error.message);
+  }
 }
 
 function showToast(message) { const toast = $('#toast'); toast.textContent = message; toast.classList.add('show'); window.clearTimeout(showToast.timer); showToast.timer = window.setTimeout(() => toast.classList.remove('show'), 2800); }
