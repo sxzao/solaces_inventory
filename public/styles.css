@@ -24,8 +24,17 @@ body { min-height: 100vh; margin: 0; background: radial-gradient(ellipse at 18% 
 button, input, select { font: inherit; }
 button { cursor: pointer; }
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.brand { display: flex; align-items: center; gap: 10px; font-size: 19px; font-weight: 800; }
-.brand-mark { display: grid; place-items: center; width: 30px; aspect-ratio: 1; background: var(--accent); color: #101816; border-radius: 50%; font-family: Georgia, serif; font-size: 18px; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark { display: block; flex: 0 0 36px; width: 36px; height: 36px; filter: drop-shadow(0 3px 7px rgba(116, 201, 170, .16)); }
+.brand-mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.tag-body { fill: var(--accent); }
+.tag-fold { fill: #a0ddc5; }
+.tag-hole { fill: var(--sidebar); }
+.tag-stitch { fill: none; stroke: #356f59; stroke-width: 1; stroke-dasharray: 1.5 2.2; }
+.tag-letter { fill: none; stroke: #14221b; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.brand-type { display: grid; gap: 2px; }
+.brand-name { color: var(--text); font-size: 18px; font-weight: 800; letter-spacing: .02em; line-height: 1; }
+.brand-caption { color: #81958b; font: 8px 'DM Mono', monospace; letter-spacing: .16em; line-height: 1.2; }
 .eyebrow, th, .metric-label, .id-preview span, .store-label { font-family: 'DM Mono', monospace; letter-spacing: .1em; font-size: 10px; }
 .eyebrow { color: var(--muted); margin: 0 0 10px; }
 h1, h2, h3, p { margin-top: 0; }
