@@ -8,6 +8,7 @@ const categories = {
   SKT: 'Skirt',
   OTH: 'Other'
 };
+const letterSizes = new Set(['2XS', 'XXS', 'XS', 'S', 'M', 'L', 'XL', '2XL', 'XXL', '3XL', 'XXXL', '4XL', '5XL']);
 
 function daysInStock(encodedAt, now = new Date()) {
   const start = new Date(encodedAt);
@@ -40,9 +41,11 @@ function decorate(item) {
 function validateItem(input) {
   const category = String(input.category || '').toUpperCase();
   if (!categories[category]) throw new Error('Choose a valid category');
-  const size = String(input.size || '').trim();
+  const size = String(input.size ?? '').trim().toUpperCase();
   const price = Number(input.price);
   if (!size) throw new Error('Size is required');
+  const numericSize = /^(0|[1-9]\d?)$/.test(size) && Number(size) <= 60;
+  if (!letterSizes.has(size) && !numericSize) throw new Error('Choose a standard letter size or a number from 0 to 60');
   if (!Number.isFinite(price) || price < 0) throw new Error('Price must be a non-negative number');
   return { category, size, price: Math.round(price * 100) / 100 };
 }
@@ -143,7 +146,7 @@ async function getDashboard(query = {}) {
 
 async function updateStatus(itemId, requestedStatus) {
   const status = String(requestedStatus || '').toUpperCase();
-  if (!['UNSOLD', 'SOLD'].includes(status)) throw new Error('Status must be UNSOLD or SOLD');
+  if (status !== 'SOLD') throw new Error('Status must be SOLD');
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
@@ -154,13 +157,9 @@ async function updateStatus(itemId, requestedStatus) {
       await connection.commit();
       return decorate(item);
     }
-    const soldAt = status === 'SOLD' ? new Date() : null;
+    const soldAt = new Date();
     await connection.query('UPDATE items SET status = ?, sold_at = ? WHERE item_id = ?', [status, soldAt, itemId]);
-    if (status === 'SOLD') {
-      await connection.query('INSERT INTO sales (item_id, category, size_label, price, encoded_at, sold_at) VALUES (?, ?, ?, ?, ?, ?)', [itemId, item.category, item.size, item.price, item.encodedAt, soldAt]);
-    } else {
-      await connection.query('DELETE FROM sales WHERE item_id = ?', [itemId]);
-    }
+    await connection.query('INSERT INTO sales (item_id, category, size_label, price, encoded_at, sold_at) VALUES (?, ?, ?, ?, ?, ?)', [itemId, item.category, item.size, item.price, item.encodedAt, soldAt]);
     await connection.commit();
     return decorate({ ...item, status, soldAt });
   } catch (error) {

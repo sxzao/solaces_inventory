@@ -15,7 +15,7 @@ Inventory is persisted in MySQL.
 
 ## Roles
 
-Use the Admin/Staff switch in the app header to change work modes. Staff mode shows item encoding and unsold stock; Admin mode also shows the dashboard, sales log, undo-sale controls, and CSV export. This switch only changes the interface and is not an authentication or security boundary.
+Use the Admin/Staff switch in the app header to change work modes. Staff mode shows item encoding and unsold stock; Admin mode also shows the dashboard, sales log, and CSV export. This switch only changes the interface and is not an authentication or security boundary.
 
 ## Connect MySQL Workbench
 

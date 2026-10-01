@@ -5,6 +5,13 @@ const manilaTimeZone = 'Asia/Manila';
 const date = (value) => new Intl.DateTimeFormat('en-PH', { timeZone: manilaTimeZone, month: 'short', day: 'numeric', year: 'numeric' }).format(parseManilaDate(value));
 const dateTime = (value) => new Intl.DateTimeFormat('en-PH', { timeZone: manilaTimeZone, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(parseManilaDate(value));
 const pageTitles = { dashboard: 'Dashboard', encode: 'Encode item', stock: 'Unsold stock', sales: 'Sales log' };
+const numericSizeGroup = $('#numeric-sizes');
+for (let size = 0; size <= 60; size += 1) {
+  const option = document.createElement('option');
+  option.value = String(size);
+  option.textContent = String(size);
+  numericSizeGroup.append(option);
+}
 
 function parseManilaDate(value) {
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}(?:[ T]\d{2}:\d{2}:\d{2}(?:\.\d+)?)?$/.test(value)) {
@@ -55,16 +62,14 @@ async function setRole(role) {
   });
   document.querySelectorAll('[data-role="admin"]').forEach((item) => { item.hidden = role !== 'ADMIN'; });
   const currentPage = document.querySelector('.page-view:not([hidden])')?.dataset.page;
-  const page = role === 'STAFF' && ['dashboard', 'sales'].includes(currentPage)
+  const page = role === 'STAFF' && currentPage === 'sales'
     ? 'stock'
     : (currentPage || (role === 'ADMIN' ? 'dashboard' : 'encode'));
   await showView(page);
 }
 
 async function showView(view) {
-  if (view === 'dashboard' || view === 'sales') {
-    if (state.role !== 'ADMIN') return;
-  }
+  if (view === 'sales' && state.role !== 'ADMIN') return;
   document.querySelectorAll('[data-view].nav-item').forEach((item) => item.classList.toggle('active', item.dataset.view === view));
   document.querySelectorAll('.page-view').forEach((page) => { page.hidden = page.dataset.page !== view; });
   $('#page-title').textContent = pageTitles[view];
@@ -118,8 +123,7 @@ async function loadSales() {
   state.sales = await request(`/api/sales?search=${search}`);
   $('#export-sales').disabled = state.sales.length === 0;
   $('#sales-empty').hidden = state.sales.length !== 0;
-  $('#sales-rows').innerHTML = state.sales.map((sale) => `<tr><td><span class="item-id">${escapeHtml(sale.itemId)}</span></td><td class="category">${escapeHtml(categoryName(sale.category))}</td><td>${escapeHtml(sale.size)}</td><td class="price">${money(sale.price)}</td><td class="subtle">${dateTime(sale.soldAt)}</td><td><button class="action-button" data-unsold="${escapeHtml(sale.itemId)}">Undo sale</button></td></tr>`).join('');
-  $('#sales-rows').querySelectorAll('[data-unsold]').forEach((button) => button.addEventListener('click', () => markUnsold(button.dataset.unsold)));
+  $('#sales-rows').innerHTML = state.sales.map((sale) => `<tr><td><span class="item-id">${escapeHtml(sale.itemId)}</span></td><td class="category">${escapeHtml(categoryName(sale.category))}</td><td>${escapeHtml(sale.size)}</td><td class="price">${money(sale.price)}</td><td class="subtle">${dateTime(sale.soldAt)}</td></tr>`).join('');
 }
 
 function csvCell(value, protectFormula = false) {
@@ -143,17 +147,6 @@ function downloadSalesCsv() {
   link.click();
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
   showToast(`Exported ${state.sales.length} sales records`);
-}
-
-async function markUnsold(itemId) {
-  if (!window.confirm(`Return ${itemId} to active inventory?`)) return;
-  try {
-    await request(`/api/items/${encodeURIComponent(itemId)}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'UNSOLD' }) });
-    showToast(`${itemId} returned to unsold stock`);
-    await Promise.all([loadSales(), loadItems(), loadDashboard()]);
-  } catch (error) {
-    showToast(error.message);
-  }
 }
 
 function showToast(message) {
