@@ -1,4 +1,4 @@
-const state = { items: [], filters: { search: '', category: '', age: '' } };
+const state = { items: [], sales: [], filters: { search: '', category: '', age: '' } };
 const $ = (selector) => document.querySelector(selector);
 const money = (value) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 2 }).format(value);
 const date = (value) => new Intl.DateTimeFormat('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(value));
@@ -39,9 +39,37 @@ async function markSold(itemId) {
 async function loadSales() {
   const search = encodeURIComponent($('#sales-search').value);
   const sales = await request(`/api/sales?search=${search}`);
+  state.sales = sales;
+  $('#export-sales').disabled = sales.length === 0;
   $('#sales-empty').hidden = sales.length !== 0;
   $('#sales-rows').innerHTML = sales.map((sale) => `<tr><td><span class="item-id">${sale.itemId}</span></td><td class="category">${categoryName(sale.category)}</td><td>${sale.size}</td><td class="price">${money(sale.price)}</td><td class="subtle">${dateTime(sale.soldAt)}</td><td><button class="action-button" data-unsold="${sale.itemId}">Undo sale</button></td></tr>`).join('');
   $('#sales-rows').querySelectorAll('[data-unsold]').forEach((button) => button.addEventListener('click', () => markUnsold(button.dataset.unsold)));
+}
+
+function csvCell(value, protectFormula = false) {
+  let text = String(value ?? '');
+  if (protectFormula && /^[\s\u0000-\u001f]*[=+\-@]/.test(text)) text = `'${text}`;
+  return `"${text.replaceAll('"', '""')}"`;
+}
+
+function downloadSalesCsv() {
+  const columns = ['Item ID', 'Category', 'Size', 'Price (PHP)', 'Encoded At', 'Sold At'];
+  const rows = state.sales.map((sale) => [
+    csvCell(sale.itemId, true),
+    csvCell(categoryName(sale.category), true),
+    csvCell(sale.size, true),
+    csvCell(Number(sale.price).toFixed(2)),
+    csvCell(new Date(sale.encodedAt).toISOString()),
+    csvCell(new Date(sale.soldAt).toISOString())
+  ]);
+  const csv = `\uFEFF${[columns.map((column) => csvCell(column)).join(','), ...rows.map((row) => row.join(','))].join('\r\n')}`;
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `solaces-sales-archive-${todayCode()}.csv`;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+  showToast(`Exported ${state.sales.length} sales records`);
 }
 
 async function markUnsold(itemId) {
@@ -72,6 +100,7 @@ $('#search-input').addEventListener('input', (event) => { state.filters.search =
 $('#category-filter').addEventListener('change', (event) => { state.filters.category = event.target.value; loadDashboard(); });
 $('#age-filter').addEventListener('change', (event) => { state.filters.age = event.target.value; loadDashboard(); });
 $('#sales-search').addEventListener('input', loadSales);
+$('#export-sales').addEventListener('click', downloadSalesCsv);
 
 $('.nav-tabs').addEventListener('click', async (event) => {
   const button = event.target.closest('[data-view]');
