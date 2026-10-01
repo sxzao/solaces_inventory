@@ -11,7 +11,11 @@ npm start
 
 Open http://localhost:3000.
 
-Inventory is persisted in MySQL. The API exposes `/api/dashboard`, `/api/items`, and `/api/sales`.
+Inventory is persisted in MySQL.
+
+## Roles
+
+Use the Admin/Staff switch in the app header to change work modes. Staff mode shows item encoding and unsold stock; Admin mode also shows the dashboard, sales log, undo-sale controls, and CSV export. This switch only changes the interface and is not an authentication or security boundary.
 
 ## Connect MySQL Workbench
 
